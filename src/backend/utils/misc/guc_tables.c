@@ -2317,6 +2317,26 @@ struct config_int ConfigureNamesInt[] =
 	},
 
 	{
+		{"walack_wal_min", PGC_SIGHUP, WAL_CHECKPOINTS,
+			gettext_noop("Sets the min WAL size for Walack Checkpointer algorithm."),
+			GUC_UNIT_MB
+		},
+		&walackWALMin,
+		300, 0, INT_MAX,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_wal_max", PGC_SIGHUP, WAL_CHECKPOINTS,
+			gettext_noop("Sets the max WAL size for Walack Checkpointer algorithm."),
+			GUC_UNIT_MB
+		},
+		&walackWALMax,
+		1000, 0, INT_MAX,
+		NULL, NULL, NULL
+	},
+
+	{
 		{"max_connections", PGC_POSTMASTER, CONN_AUTH_SETTINGS,
 			gettext_noop("Sets the maximum number of concurrent connections."),
 			NULL
@@ -4146,6 +4166,69 @@ struct config_real ConfigureNamesReal[] =
 		},
 		&vacuum_max_eager_freeze_failure_rate,
 		0.03, 0.0, 1.0,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_alpha_1", PGC_USERSET, WAL_CHECKPOINTS, 
+			gettext_noop("Specify alpha_1 parameter for Walack Checkpointing algorithm.")
+		},
+		&walackAlpha1,
+		0.5, 0.0, 1.0,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_alpha_2", PGC_USERSET, WAL_CHECKPOINTS, 
+			gettext_noop("Specify alpha_2 parameter for Walack Checkpointing algorithm.")
+		},
+		&walackAlpha2,
+		1.0, 0.0, 1.0,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_beta_1", PGC_USERSET, WAL_CHECKPOINTS, 
+			gettext_noop("Specify beta_1 parameter for Walack Checkpointing algorithm.")
+		},
+		&walackBeta1,
+		0.2, 0.0, 1.0,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_beta_2", PGC_USERSET, WAL_CHECKPOINTS, 
+			gettext_noop("Specify beta_2 parameter for Walack Checkpointing algorithm.")
+		},
+		&walackBeta1,
+		0.8, 0.0, 1.0,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_theta_1", PGC_USERSET, WAL_CHECKPOINTS, 
+			gettext_noop("Specify theta_1 parameter for Walack Checkpointing algorithm.")
+		},
+		&walackBeta1,
+		0.05, 0.0, 1.0,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_theta_2", PGC_USERSET, WAL_CHECKPOINTS, 
+			gettext_noop("Specify theta_2 parameter for Walack Checkpointing algorithm.")
+		},
+		&walackBeta1,
+		0.3, 0.0, 1.0,
+		NULL, NULL, NULL
+	},
+
+	{
+		{"walack_delta", PGC_USERSET, WAL_CHECKPOINTS, 
+			gettext_noop("Specify delta parameter for Walack Checkpointing algorithm.")
+		},
+		&walackBeta1,
+		100.0, 0.0, 1000.0,
 		NULL, NULL, NULL
 	},
 

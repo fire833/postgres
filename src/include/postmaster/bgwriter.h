@@ -20,15 +20,25 @@
 #include "storage/smgr.h"
 #include "storage/sync.h"
 
-
 /* GUC options */
 extern PGDLLIMPORT int BgWriterDelay;
 extern PGDLLIMPORT int CheckPointTimeout;
 extern PGDLLIMPORT int CheckPointWarning;
 extern PGDLLIMPORT double CheckPointCompletionTarget;
+extern PGDLLIMPORT double walackAlpha1;
+extern PGDLLIMPORT double walackAlpha2;
+extern PGDLLIMPORT double walackBeta1;
+extern PGDLLIMPORT double walackBeta2;
+extern PGDLLIMPORT double walackTheta1;
+extern PGDLLIMPORT double walackTheta2;
+extern PGDLLIMPORT int walackWALMin;
+extern PGDLLIMPORT int walackWALMax;
+extern PGDLLIMPORT double walackDelta;
 
-pg_noreturn extern void BackgroundWriterMain(const void *startup_data, size_t startup_data_len);
-pg_noreturn extern void CheckpointerMain(const void *startup_data, size_t startup_data_len);
+pg_noreturn extern void BackgroundWriterMain(const void *startup_data,
+                                             size_t startup_data_len);
+pg_noreturn extern void CheckpointerMain(const void *startup_data,
+                                         size_t startup_data_len);
 
 extern void RequestCheckpoint(int flags);
 extern void CheckpointWriteDelay(int flags, double progress);
@@ -42,4 +52,4 @@ extern void CheckpointerShmemInit(void);
 
 extern bool FirstCallSinceLastCheckpoint(void);
 
-#endif							/* _BGWRITER_H */
+#endif /* _BGWRITER_H */

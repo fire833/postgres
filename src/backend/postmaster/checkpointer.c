@@ -36,7 +36,10 @@
  */
 #include "postgres.h"
 
+#include <algorithm>
+#include <sys/param.h>
 #include <sys/time.h>
+#include <threads.h>
 #include <time.h>
 
 #include "access/xlog.h"
@@ -62,6 +65,7 @@
 #include "storage/smgr.h"
 #include "storage/spin.h"
 #include "utils/guc.h"
+#include "utils/guc_hooks.h"
 #include "utils/memutils.h"
 #include "utils/resowner.h"
 
@@ -141,6 +145,15 @@ static CheckpointerShmemStruct *CheckpointerShmem;
 int			CheckPointTimeout = 300;
 int			CheckPointWarning = 30;
 double		CheckPointCompletionTarget = 0.9;
+double 		walackAlpha1 = 0.5;
+double 		walackAlpha2 = 1.0;
+double 		walackBeta1 = 0.2;
+double 		walackBeta2 = 0.8;
+double 		walackTheta1 = 0.05;
+double 		walackTheta2 = 0.3;
+int 		walackWALMin = 500;
+int 		walackWALMax = 8000;
+double 		walackDelta = 100;
 
 /*
  * Private state
@@ -164,6 +177,7 @@ static bool IsCheckpointOnSchedule(double progress);
 static bool ImmediateCheckpointRequested(void);
 static bool CompactCheckpointerRequestQueue(void);
 static void UpdateSharedMemoryConfig(void);
+static int GetIntensityRatio(double p1, double lower, double upper) 
 
 /* Signal handlers */
 static void ReqShutdownXLOG(SIGNAL_ARGS);
@@ -339,6 +353,9 @@ CheckpointerMain(const void *startup_data, size_t startup_data_len)
 	 */
 	ProcGlobal->checkpointerProc = MyProcNumber;
 
+	int lastDelta = -100;
+	int walSize = 0;
+
 	/*
 	 * Loop until we've been asked to write the shutdown checkpoint or
 	 * terminate.
@@ -391,6 +408,34 @@ CheckpointerMain(const void *startup_data, size_t startup_data_len)
 			do_checkpoint = true;
 			flags |= CHECKPOINT_CAUSE_TIME;
 		}
+
+		/*
+		 * Implementation of Walack to update WAL size.
+		 */
+		int txtype = GetIntensityRatio(0.0, walackAlpha1, walackAlpha2); // TODO, compute ratio.
+		int updatetype = GetIntensityRatio(0.0, walackTheta1, walackTheta2); // TODO, compute ratio from xlog.
+		double currDelta = 0.0;
+
+		if (updatetype == 2 && txtype == 2)
+			currDelta = walackDelta;
+
+		if (updatetype == 0 && txtype == 0)
+			currDelta = -walackDelta;
+
+		// If they have the same sign
+		if (lastDelta * currDelta > 0)
+			walackDelta = MIN(walackDelta * 2, walackWALMin / 2);
+		else
+			walackDelta = MIN(walackDelta / 2, 1);
+
+			// Keep our walSize within bounds.
+		walSize += currDelta;
+		walSize = MIN(walackWALMin, walSize);
+		walSize = MAX(walackWALMax, walSize);
+		lastDelta = currDelta;
+
+		// Assign the max wal size within XLOG.
+		assign_max_wal_size(walSize);
 
 		/*
 		 * Do a checkpoint if requested.
@@ -1403,4 +1448,20 @@ FirstCallSinceLastCheckpoint(void)
 	ckpt_done = new_done;
 
 	return FirstCall;
+}
+
+/*
+ * From the Walack paper, compares current ratio of transactions to predefined
+ * thresholds for determining whether workload is read-heavy, mixed, or write-heavy.
+ */
+static int 
+GetIntensityRatio(double p1, double lower, double upper) 
+{
+	if (p1 < lower)
+		return 0;
+ 
+	if (p1 > lower && p1 < upper)
+		return 1;
+ 
+	return 2;
 }
