@@ -36,7 +36,6 @@
  */
 #include "postgres.h"
 
-#include <algorithm>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <threads.h>
@@ -177,7 +176,7 @@ static bool IsCheckpointOnSchedule(double progress);
 static bool ImmediateCheckpointRequested(void);
 static bool CompactCheckpointerRequestQueue(void);
 static void UpdateSharedMemoryConfig(void);
-static int GetIntensityRatio(double p1, double lower, double upper) 
+static int GetIntensityRatio(double p1, double lower, double upper);
 
 /* Signal handlers */
 static void ReqShutdownXLOG(SIGNAL_ARGS);
@@ -435,7 +434,7 @@ CheckpointerMain(const void *startup_data, size_t startup_data_len)
 		lastDelta = currDelta;
 
 		// Assign the max wal size within XLOG.
-		assign_max_wal_size(walSize);
+		assign_max_wal_size(walSize, NULL);
 
 		/*
 		 * Do a checkpoint if requested.
