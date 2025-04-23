@@ -2319,7 +2319,6 @@ struct config_int ConfigureNamesInt[] =
 	{
 		{"walack_wal_min", PGC_SIGHUP, WAL_CHECKPOINTS,
 			gettext_noop("Sets the min WAL size for Walack Checkpointer algorithm."),
-			GUC_UNIT_MB
 		},
 		&walackWALMin,
 		300, 0, INT_MAX,
@@ -2329,7 +2328,6 @@ struct config_int ConfigureNamesInt[] =
 	{
 		{"walack_wal_max", PGC_SIGHUP, WAL_CHECKPOINTS,
 			gettext_noop("Sets the max WAL size for Walack Checkpointer algorithm."),
-			GUC_UNIT_MB
 		},
 		&walackWALMax,
 		1000, 0, INT_MAX,
