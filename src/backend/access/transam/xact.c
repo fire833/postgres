@@ -257,6 +257,12 @@ static TransactionStateData TopTransactionStateData = {
 static int	nUnreportedXids;
 static TransactionId unreportedXids[PGPROC_MAX_CACHED_SUBXIDS];
 
+/*
+ * Information on transaction read/write ratio for use in Walack.
+ */
+ static long totalTransationCount = 0;
+ static long totalReadOnlyTransactions = 0;
+
 static TransactionState CurrentTransactionState = &TopTransactionStateData;
 
 /*
@@ -2066,6 +2072,9 @@ StartTransaction(void)
 	TransactionState s;
 	VirtualTransactionId vxid;
 
+	// For Walack.
+	totalTransationCount++;
+
 	/*
 	 * Let's just make sure the state stack is empty
 	 */
@@ -3176,6 +3185,10 @@ CommitTransactionCommandInternal(void)
 {
 	TransactionState s = CurrentTransactionState;
 	SavedTransactionCharacteristics savetc;
+
+	// For Walack, keep track of 
+	if (XactReadOnly)
+		totalReadOnlyTransactions++;
 
 	/* Must save in case we need to restore below */
 	SaveTransactionCharacteristics(&savetc);
