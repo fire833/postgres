@@ -44,6 +44,7 @@
 #include "access/xlog.h"
 #include "access/xlog_internal.h"
 #include "access/xlogrecovery.h"
+#include "access/xact.h"
 #include "libpq/pqsignal.h"
 #include "miscadmin.h"
 #include "pgstat.h"
@@ -411,8 +412,8 @@ CheckpointerMain(const void *startup_data, size_t startup_data_len)
 		/*
 		 * Implementation of Walack to update WAL size.
 		 */
-		int txtype = GetIntensityRatio(0.0, walackAlpha1, walackAlpha2); // TODO, compute ratio.
-		int updatetype = GetIntensityRatio(0.0, walackTheta1, walackTheta2); // TODO, compute ratio from xlog.
+		int txtype = GetIntensityRatio(totalReadOnlyTransactions / totalTransationCount, walackAlpha1, walackAlpha2); // TODO, compute ratio.
+		int updatetype = GetIntensityRatio((totalTransationCount - totalReadOnlyTransactions) / totalTransationCount, walackTheta1, walackTheta2); // TODO, compute ratio from xlog.
 		double currDelta = 0.0;
 
 		if (updatetype == 2 && txtype == 2)

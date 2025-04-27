@@ -86,6 +86,9 @@ extern PGDLLIMPORT int synchronous_commit;
 extern PGDLLIMPORT TransactionId CheckXidAlive;
 extern PGDLLIMPORT bool bsysscan;
 
+extern long totalTransationCount;
+extern long totalReadOnlyTransactions;
+
 /*
  * Miscellaneous flag bits to record events which occur on the top level
  * transaction. These flags are only persisted in MyXactFlags and are intended
