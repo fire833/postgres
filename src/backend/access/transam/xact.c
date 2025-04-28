@@ -260,8 +260,8 @@ static TransactionId unreportedXids[PGPROC_MAX_CACHED_SUBXIDS];
 /*
  * Information on transaction read/write ratio for use in Walack.
  */
-extern long totalTransationCount = 0;
-extern long totalReadOnlyTransactions = 0;
+extern long totalTransationCount = 1;
+extern long totalReadOnlyTransactions = 1;
 
 static TransactionState CurrentTransactionState = &TopTransactionStateData;
 
